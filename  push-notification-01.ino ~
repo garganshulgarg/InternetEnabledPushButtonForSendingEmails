@@ -1,0 +1,46 @@
+
+int inputPin = D1; //Push Button Pin
+int val =0; // Variable for Push Button Status
+int state = 1; // Variable for on/off state
+
+const char * DEVID = "v3D45971F5A15C8A"; // DEV ID created in the pushing box scenerio sending an email when button is clicked.
+const char * serverName = "api.pushingbox.com"; // Pushing Box API Used 
+
+TCPClient client;
+void setup() {
+
+pinMode(inputPin,INPUT);
+Serial.begin(9600);
+
+}
+
+void loop() {
+
+val = digitalRead(inputPin); // read the state of push button
+if(val==LOW) // If push button is pressed
+{
+    state = !state; // reverse on/off state
+    delay(250);//primitive button debounce
+    Serial.println("button pushed!");
+    sendToPushingBox(DEVID);
+}
+
+}
+
+void sendToPushingBox(const char * devid){
+    client.stop();
+    if(client.connect(serverName,80)){
+        client.print("GET /pushingbox?devid=");
+        client.print(devid);
+        client.println(" HTTP/1.1");
+        client.print("Host: ");
+        client.println(serverName);
+        client.println("User-Agent: Spark");
+        client.println();
+        client.flush();
+        
+    }else{
+        Serial.println("connection failed!");
+    }
+    
+}
